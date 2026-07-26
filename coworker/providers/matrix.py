@@ -184,6 +184,12 @@ MATRIX: dict[str, ModelEntry] = {
     "vertex:gemini/gemini-3.6-flash": ModelEntry(
         "Gemini 3.6 Flash · Vertex AI", _AGENTIC_VISION, 1_048_576
     ),
+    "vertex:gemini/gemini-2.5-pro": ModelEntry(
+        "Gemini 2.5 Pro · Vertex AI", _AGENTIC_VISION, 1_048_576
+    ),
+    "vertex:gemini/gemini-2.5-flash": ModelEntry(
+        "Gemini 2.5 Flash · Vertex AI", _AGENTIC_VISION, 1_048_576
+    ),
     "vertex:claude/claude-sonnet-4-6": ModelEntry(
         "Claude Sonnet 4.6 · Vertex AI", _AGENTIC_VISION, 200_000
     ),

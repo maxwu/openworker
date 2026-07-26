@@ -14,7 +14,12 @@ from coworker.providers import (
     StreamChunk,
     capabilities_for,
 )
-from coworker.providers.registry import _normalize_ollama_url, build_provider_client
+from coworker.providers.registry import (
+    _normalize_ollama_url,
+    build_provider_client,
+    get_descriptor,
+    provider_names,
+)
 from coworker.providers.openai_provider import _salvage_tool_calls_from_text
 
 
@@ -116,6 +121,16 @@ def test_router_routes_and_strips_prefix(monkeypatch):
     assert state["latest"]["openai"].models == ["gpt-5.5"]
 
 
+def test_router_routes_vertex_and_strips_prefix(monkeypatch):
+    state = _patch_build(monkeypatch)
+    router = ProviderRouter(secrets=None)
+
+    turn = router.complete(model="vertex:gemini/gemini-2.5-flash", messages=[])
+
+    assert turn.text == "vertex"
+    assert state["latest"]["vertex"].models == ["gemini/gemini-2.5-flash"]
+
+
 def test_router_caches_and_invalidates(monkeypatch):
     state = _patch_build(monkeypatch)
     router = ProviderRouter(secrets=None)
@@ -129,6 +144,18 @@ def test_router_caches_and_invalidates(monkeypatch):
     third = router._client_for("ollama:c")
     assert third is not first  # rebuilt after invalidation
     assert len(state["created"]) == 2
+
+
+def test_router_vertex_cache_invalidates_after_settings_change(monkeypatch):
+    state = _patch_build(monkeypatch)
+    router = ProviderRouter(secrets=None)
+
+    first = router._client_for("vertex:gemini/gemini-2.5-flash")
+    router.invalidate("vertex")
+    second = router._client_for("vertex:gemini/gemini-2.5-pro")
+
+    assert second is not first
+    assert [c.name for c in state["created"]] == ["vertex", "vertex"]
 
 
 def test_router_bare_only_strips_known_provider():
@@ -392,7 +419,7 @@ def test_set_provider_skips_recommended_when_not_pulled(tmp_path, monkeypatch):
 def test_provider_builders(monkeypatch):
     import pytest
 
-    from coworker.providers import AnthropicProvider, GeminiProvider
+    from coworker.providers import AnthropicProvider, GeminiProvider, VertexProvider
     from coworker.providers.registry import build_provider_client
 
     # anthropic and gemini are native: key resolution deferred to first call
@@ -409,6 +436,14 @@ def test_provider_builders(monkeypatch):
     with pytest.raises(RuntimeError, match="Gemini"):
         build_provider_client("gemini", {}, None)._ensure_client()
 
+    v = build_provider_client(
+        "vertex", {"project": "proj-1", "location": "global"}, None
+    )
+    assert isinstance(v, VertexProvider)
+    assert v._project == "proj-1"
+    assert v._location == "global"
+    assert v._api_key is None
+
     # OpenAI custom endpoint (Azure /openai/v1, OpenRouter, vLLM, …) passes through
     o = build_provider_client(
         "openai", {"base_url": "https://my.azure.example/openai/v1"}, None
@@ -418,7 +453,11 @@ def test_provider_builders(monkeypatch):
 
 
 def test_anthropic_gemini_capabilities():
-    for m in ("anthropic:claude-sonnet-4-6", "gemini:gemini-2.5-flash"):
+    for m in (
+        "anthropic:claude-sonnet-4-6",
+        "gemini:gemini-2.5-flash",
+        "vertex:gemini/gemini-2.5-flash",
+    ):
         caps = capabilities_for(m)
         assert caps.tools is True and caps.vision is True and caps.streaming is True
         assert caps.parallel_tool_calls is True  # both native: results fold correctly
@@ -428,14 +467,26 @@ def test_anthropic_gemini_provider_config(tmp_path, monkeypatch):
     monkeypatch.setenv("COWORKER_STATE_DIR", str(tmp_path / "state"))
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_PROJECT", raising=False)
+    monkeypatch.delenv("GOOGLE_CLOUD_LOCATION", raising=False)
     from coworker.server.manager import SessionManager
 
     mgr = SessionManager(data_dir=tmp_path)
     provs = {p["name"]: p for p in mgr.get_providers()}
     assert provs["anthropic"]["configured"] is False
     assert provs["gemini"]["needs_key"] is True
+    assert provs["vertex"]["needs_key"] is True
+    assert provs["vertex"]["configured"] is False
+    assert [f["key"] for f in provs["vertex"]["fields"]] == [
+        "project",
+        "location",
+        "auth_method",
+        "service_account_json",
+        "vertex_api_key",
+    ]
     assert "claude-sonnet-4-6" in provs["anthropic"]["suggested_models"]
     assert "gemini-2.5-flash" in provs["gemini"]["suggested_models"]
+    assert "gemini/gemini-2.5-flash" in provs["vertex"]["suggested_models"]
 
     res = mgr.set_provider("anthropic", {"api_key": "sk-ant-test"})
     assert res["ok"] is True and res["recommended_model"] == "claude-fable-5"
@@ -449,6 +500,31 @@ def test_anthropic_gemini_provider_config(tmp_path, monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "AIza-env")
     provs = {p["name"]: p for p in mgr.get_providers()}
     assert provs["gemini"]["configured"] is True
+
+    res = mgr.set_provider("vertex", {"project": "profile-project", "location": "global"})
+    assert res["ok"] is True and res["recommended_model"] == "gemini/gemini-3.6-flash"
+    provs = {p["name"]: p for p in mgr.get_providers()}
+    assert provs["vertex"]["values"] == {
+        "project": "profile-project",
+        "location": "global",
+    }
+    assert "service_account_json" not in provs["vertex"].get("values", {})
+    assert "vertex:gemini/gemini-3.6-flash" in mgr.get_settings()["models"]
+
+
+def test_registry_exposes_vertex_provider_descriptor():
+    assert "vertex" in provider_names()
+    d = get_descriptor("vertex")
+    assert d is not None
+    assert d.needs_key is True
+    assert [f.key for f in d.fields] == [
+        "project",
+        "location",
+        "auth_method",
+        "service_account_json",
+        "vertex_api_key",
+    ]
+    assert d.fields[2].default == "adc"
 
 
 def test_first_configured_provider_wins_default(tmp_path, monkeypatch):
