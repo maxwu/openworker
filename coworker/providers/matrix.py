@@ -62,8 +62,14 @@ MATRIX: dict[str, ModelEntry] = {
     "anthropic:claude-fable-5": ModelEntry(
         "Claude Fable 5 · Anthropic", _AGENTIC_VISION, 1_000_000
     ),
+    "anthropic:claude-opus-5": ModelEntry(
+        "Claude Opus 5 · Anthropic", _AGENTIC_VISION, 1_000_000
+    ),
     "anthropic:claude-opus-4-8": ModelEntry(
-        "Claude Opus 4.8 · Anthropic", _AGENTIC_VISION, 200_000
+        "Claude Opus 4.8 · Anthropic", _AGENTIC_VISION, 1_000_000
+    ),
+    "anthropic:claude-sonnet-5": ModelEntry(
+        "Claude Sonnet 5 · Anthropic", _AGENTIC_VISION, 1_000_000
     ),
     "anthropic:claude-sonnet-4-6": ModelEntry(
         "Claude Sonnet 4.6 · Anthropic", _AGENTIC_VISION, 200_000
@@ -153,6 +159,18 @@ MATRIX: dict[str, ModelEntry] = {
     # Bedrock ids carry a family segment (claude/ → native Anthropic path, other/ →
     # Converse) plus AWS's own `-v<n>:<m>` version suffix. Some regions require the
     # `us.`/`eu.` cross-region inference-profile prefix — custom add-model accepts those.
+    "bedrock:claude/anthropic.claude-fable-5": ModelEntry(
+        "Claude Fable 5 · AWS Bedrock", _AGENTIC_VISION, 1_000_000
+    ),
+    "bedrock:claude/anthropic.claude-opus-5": ModelEntry(
+        "Claude Opus 5 · AWS Bedrock", _AGENTIC_VISION, 1_000_000
+    ),
+    "bedrock:claude/anthropic.claude-opus-4-8": ModelEntry(
+        "Claude Opus 4.8 · AWS Bedrock", _AGENTIC_VISION, 1_000_000
+    ),
+    "bedrock:claude/anthropic.claude-sonnet-5": ModelEntry(
+        "Claude Sonnet 5 · AWS Bedrock", _AGENTIC_VISION, 1_000_000
+    ),
     "bedrock:claude/anthropic.claude-sonnet-4-6-v1:0": ModelEntry(
         "Claude Sonnet 4.6 · AWS Bedrock", _AGENTIC_VISION, 200_000
     ),
@@ -189,6 +207,18 @@ MATRIX: dict[str, ModelEntry] = {
     ),
     "vertex:gemini/gemini-2.5-flash": ModelEntry(
         "Gemini 2.5 Flash · Vertex AI", _AGENTIC_VISION, 1_048_576
+    ),
+    "vertex:claude/claude-fable-5": ModelEntry(
+        "Claude Fable 5 · Vertex AI", _AGENTIC_VISION, 1_000_000
+    ),
+    "vertex:claude/claude-opus-5": ModelEntry(
+        "Claude Opus 5 · Vertex AI", _AGENTIC_VISION, 1_000_000
+    ),
+    "vertex:claude/claude-opus-4-8": ModelEntry(
+        "Claude Opus 4.8 · Vertex AI", _AGENTIC_VISION, 1_000_000
+    ),
+    "vertex:claude/claude-sonnet-5": ModelEntry(
+        "Claude Sonnet 5 · Vertex AI", _AGENTIC_VISION, 1_000_000
     ),
     "vertex:claude/claude-sonnet-4-6": ModelEntry(
         "Claude Sonnet 4.6 · Vertex AI", _AGENTIC_VISION, 200_000

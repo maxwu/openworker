@@ -85,6 +85,8 @@ model: vertex:gemini/gemini-2.5-flash
 
 `gemini:` uses the Gemini Developer API and an API key. `vertex:` uses Vertex AI in your Google Cloud project; Gemini models use the `vertex:gemini/...` family prefix. Billing, quota, region availability, IAM, and audit logs belong to the selected GCP project.
 
+Anthropic models on Vertex AI use the `vertex:claude/...` family prefix, for example `vertex:claude/claude-opus-4-8` or `vertex:claude/claude-sonnet-5`.
+
 ## Privacy
 
 OpenWorker is local-first. Everything lives on your machine: the agent loop, your conversations, connector tokens, and model keys - all in the app's local secret store. The only cloud piece is a small service that brokers OAuth handshakes for connectors. You can always use the App without signing-in - use the connectors via manually-created credentials/API-keys.

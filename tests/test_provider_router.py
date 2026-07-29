@@ -485,8 +485,12 @@ def test_anthropic_gemini_provider_config(tmp_path, monkeypatch):
         "vertex_api_key",
     ]
     assert "claude-sonnet-4-6" in provs["anthropic"]["suggested_models"]
+    assert "claude-sonnet-5" in provs["anthropic"]["suggested_models"]
+    assert "claude-opus-5" in provs["anthropic"]["suggested_models"]
     assert "gemini-2.5-flash" in provs["gemini"]["suggested_models"]
     assert "gemini/gemini-2.5-flash" in provs["vertex"]["suggested_models"]
+    assert "claude/claude-opus-4-8" in provs["vertex"]["suggested_models"]
+    assert "claude/claude-sonnet-5" in provs["vertex"]["suggested_models"]
 
     res = mgr.set_provider("anthropic", {"api_key": "sk-ant-test"})
     assert res["ok"] is True and res["recommended_model"] == "claude-fable-5"

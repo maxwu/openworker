@@ -352,5 +352,9 @@ def test_outbound_messages_strip_usage_sidecar(tmp_path):
 def test_model_context_windows_covers_verified_entries_only():
     windows = model_context_windows()
     assert windows["anthropic:claude-fable-5"] == 1_000_000
+    assert windows["anthropic:claude-opus-5"] == 1_000_000
+    assert windows["anthropic:claude-sonnet-5"] == 1_000_000
+    assert windows["vertex:claude/claude-opus-4-8"] == 1_000_000
+    assert windows["vertex:claude/claude-sonnet-5"] == 1_000_000
     assert "together:thinkingmachines/Inkling" not in windows  # unverified stays absent
     assert all(isinstance(v, int) and v > 0 for v in windows.values())

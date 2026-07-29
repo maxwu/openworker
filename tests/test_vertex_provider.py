@@ -134,6 +134,8 @@ def test_load_credentials_bad_json_raises():
 def test_vertex_capabilities_from_matrix_and_fallback():
     assert capabilities_for("vertex:gemini/gemini-3.6-flash").vision
     assert capabilities_for("vertex:claude/claude-sonnet-4-6").pdf
+    assert capabilities_for("vertex:claude/claude-opus-4-8").pdf
+    assert capabilities_for("vertex:claude/claude-sonnet-5").pdf
     curated_ow = capabilities_for(
         "vertex:openweight/meta/llama-4-maverick-17b-128e-instruct-maas"
     )
