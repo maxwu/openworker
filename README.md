@@ -54,9 +54,38 @@ Under the hood:
 
 Model access is yours: pick a provider, paste your key, switch anytime. Supported out of the box:
 
-**OpenAI · Anthropic · Google Gemini · Inkling (Thinking Machines) · GLM (Z.ai) · DeepSeek · Kimi (Moonshot) · Qwen · MiniMax · Mistral · Grok (xAI)** - plus open-weight models via **Together** and **Fireworks**, and fully local models via **Ollama**.
+**OpenAI · Anthropic · Google Gemini · Gemini on Vertex AI · Inkling (Thinking Machines) · GLM (Z.ai) · DeepSeek · Kimi (Moonshot) · Qwen · MiniMax · Mistral · Grok (xAI)** - plus open-weight models via **Together** and **Fireworks**, and fully local models via **Ollama**.
 
 A curated model list marks what we've verified for tool-calling work. Adding any model string works at your own risk.
+
+### Gemini Providers
+
+OpenWorker exposes two explicit Gemini routes:
+
+```text
+gemini:gemini-2.5-flash      # Gemini Developer API, using a Gemini API key
+vertex:gemini/gemini-2.5-flash  # Vertex AI, using your Google Cloud project
+```
+
+For Vertex AI local development, authenticate with Application Default Credentials and select a project:
+
+```bash
+gcloud auth application-default login
+gcloud config set project PROJECT_ID
+```
+
+Configure the provider with:
+
+```text
+provider: vertex
+project: PROJECT_ID
+location: LOCATION
+model: vertex:gemini/gemini-2.5-flash
+```
+
+`gemini:` uses the Gemini Developer API and an API key. `vertex:` uses Vertex AI in your Google Cloud project; Gemini models use the `vertex:gemini/...` family prefix. Billing, quota, region availability, IAM, and audit logs belong to the selected GCP project.
+
+Anthropic models on Vertex AI use the `vertex:claude/...` family prefix, for example `vertex:claude/claude-opus-4-8` or `vertex:claude/claude-sonnet-5`.
 
 ## Privacy
 
